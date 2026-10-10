@@ -1,17 +1,24 @@
 import os
 import json
 from typing import List, Optional, Dict, Any
-from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, status
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, File, Form, Response, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from database import engine, get_db, Base
+from database import engine, get_db, Base, SessionLocal
 from models import (
-    User, StudentProfile, Skill, UserSkill, Career, CareerSkill,
+    User, UserSession, StudentProfile, Skill, UserSkill, Career, CareerSkill,
     Course, Certification, ProjectTemplate, Resume,
     ProfileResponse, ProfileUpdateRequest, CareerMatchResponse,
     WhatIfRequest, WhatIfResponse, ApplySimulationRequest,
-    ResumeVariantItem, UniversityInsightsResponse
+    ResumeVariantItem, UniversityInsightsResponse,
+    RegisterRequest, LoginRequest, AuthResponse, UserResponse
+)
+from auth_service import (
+    hash_password, verify_password, create_user_session, delete_user_session,
+    get_current_user, get_optional_current_user, extract_token_from_request,
+    COOKIE_NAME
 )
 from matching_engine import calculate_career_match
 from recommendation_engine import get_recommendations_for_gaps
@@ -20,14 +27,36 @@ from simulator import run_what_if_simulation
 from resume_engine import get_or_generate_tailored_resumes
 from university_engine import get_university_insights
 from seed_data import init_db_and_seed
+from careertwin_service import (
+    get_overview_summary, get_data_quality_report,
+    get_market_overview, get_market_skills, get_market_roles,
+    get_market_salary, get_market_experience, get_market_locations,
+    get_market_companies, get_market_cooccurrence,
+    get_jds_overview, get_jds_descriptive, get_jds_statistics,
+    get_jds_logistic, get_jds_random_forest, get_jds_model_comparison,
+    get_sds_overview, get_sds_descriptive, get_sds_statistics,
+    get_sds_logistic, get_sds_random_forest,
+    get_alignment_matrix, calculate_what_if_scenario,
+    get_evidence_by_capability, get_workforce_decisions
+)
+from careertwin_pipeline import execute_full_pipeline
+from dataset_upload_service import (
+    create_upload_session,
+    apply_column_mapping,
+    preprocess_and_analyze_session,
+    list_all_sessions,
+    get_session,
+    get_active_session_id,
+    set_active_session_id
+)
 
 # Ensure database tables exist
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="CareerTwin Intelligence API",
-    description="AI-powered career progression and skill-gap platform backend",
-    version="1.0.0"
+    description="Data-driven intelligence framework for skill demand, career outcomes and workforce alignment",
+    version="2.0.0"
 )
 
 # Enable CORS for Vite frontend
@@ -43,22 +72,105 @@ app.add_middleware(
 @app.on_event("startup")
 def startup_event():
     init_db_and_seed()
+    db = SessionLocal()
+    try:
+        from models import MarketAnalyticsJob
+        if db.query(MarketAnalyticsJob).count() == 0:
+            execute_full_pipeline()
+    finally:
+        db.close()
 
 
 # ============================================================================
-# Authentication & Demo Session
+# Authentication & User Management
 # ============================================================================
 
-@app.post("/api/auth/login")
-def login(payload: Dict[str, str], db: Session = Depends(get_db)):
-    email = payload.get("email", "hariom@chandigarh.edu")
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        # Default to Hariom Gupta demo account
-        user = db.query(User).filter(User.email == "hariom@chandigarh.edu").first()
-    
+@app.post("/api/auth/register", response_model=AuthResponse)
+def register(payload: RegisterRequest, response: Response, db: Session = Depends(get_db)):
+    name = (payload.name or "").strip()
+    email = (payload.email or "").strip().lower()
+    password = payload.password or ""
+
+    if len(name) < 2:
+        raise HTTPException(status_code=400, detail="Full name must be at least 2 characters.")
+    if "@" not in email or "." not in email:
+        raise HTTPException(status_code=400, detail="Please provide a valid email address.")
+    if len(password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters.")
+
+    existing_user = db.query(User).filter(func.lower(User.email) == email).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="An account with this email already exists.")
+
+    hashed_pw = hash_password(password)
+    new_user = User(
+        name=name,
+        email=email,
+        password_hash=hashed_pw,
+        role="student"
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    # Automatically create user profile
+    profile = StudentProfile(
+        user_id=new_user.id,
+        full_name=new_user.name,
+        university="Chandigarh University",
+        degree="B.E. Computer Science Engineering",
+        graduation_year="2026",
+        bio="Workforce intelligence and career alignment explorer.",
+        target_career_id="cloud-engineer"
+    )
+    db.add(profile)
+    db.commit()
+
+    # Generate session token and set secure cookie
+    token = create_user_session(db, new_user.id)
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=7 * 86400
+    )
+
     return {
-        "access_token": "demo_jwt_token_hariom_gupta",
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": new_user.id,
+            "name": new_user.name,
+            "email": new_user.email,
+            "role": new_user.role
+        }
+    }
+
+
+@app.post("/api/auth/login", response_model=AuthResponse)
+def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)):
+    email = (payload.email or "").strip().lower()
+    password = payload.password or ""
+
+    if not email or not password:
+        raise HTTPException(status_code=400, detail="Email and password are required.")
+
+    user = db.query(User).filter(func.lower(User.email) == email).first()
+    if not user or not verify_password(password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+
+    token = create_user_session(db, user.id)
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        httponly=True,
+        samesite="lax",
+        max_age=7 * 86400
+    )
+
+    return {
+        "access_token": token,
         "token_type": "bearer",
         "user": {
             "id": user.id,
@@ -69,13 +181,39 @@ def login(payload: Dict[str, str], db: Session = Depends(get_db)):
     }
 
 
+@app.get("/api/auth/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email,
+        "role": current_user.role
+    }
+
+
+@app.post("/api/auth/logout")
+def logout(request: Request, response: Response, db: Session = Depends(get_db)):
+    token = extract_token_from_request(request)
+    if token:
+        delete_user_session(db, token)
+    response.delete_cookie(COOKIE_NAME)
+    return {"status": "success", "message": "Successfully logged out"}
+
+
 # ============================================================================
 # Master Profile & Skills
 # ============================================================================
 
 @app.get("/api/profile", response_model=ProfileResponse)
-def get_profile(db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == "hariom@chandigarh.edu").first()
+def get_profile(
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: Session = Depends(get_db)
+):
+    user = current_user
+    if not user:
+        user = db.query(User).filter(User.email == "hariom@chandigarh.edu").first()
+    if not user:
+        user = db.query(User).first()
     if not user:
         raise HTTPException(status_code=404, detail="User profile not found")
 
@@ -109,8 +247,16 @@ def get_profile(db: Session = Depends(get_db)):
 
 
 @app.put("/api/profile")
-def update_profile(req: ProfileUpdateRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == "hariom@chandigarh.edu").first()
+def update_profile(
+    req: ProfileUpdateRequest,
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: Session = Depends(get_db)
+):
+    user = current_user
+    if not user:
+        user = db.query(User).filter(User.email == "hariom@chandigarh.edu").first()
+    if not user:
+        user = db.query(User).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -443,3 +589,287 @@ def update_resume(resume_id: int, payload: Dict[str, Any], db: Session = Depends
 @app.get("/api/university/insights")
 def get_university_data():
     return get_university_insights()
+
+
+# ============================================================================
+# DATASET UPLOAD & DYNAMIC SESSION MANAGEMENT
+# ============================================================================
+
+@app.post("/api/upload")
+async def api_upload_dataset(
+    file: UploadFile = File(...),
+    current_user: Optional[User] = Depends(get_optional_current_user)
+):
+    try:
+        content = await file.read()
+        user_id = current_user.id if current_user else None
+        session_record = create_upload_session(content, file.filename, user_id=user_id)
+        return {
+            "status": "success",
+            "session": session_record
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/upload/sessions")
+def api_get_sessions(current_user: Optional[User] = Depends(get_optional_current_user)):
+    user_id = current_user.id if current_user else None
+    return {
+        "active_session_id": get_active_session_id(),
+        "sessions": list_all_sessions(user_id=user_id)
+    }
+
+@app.get("/api/sessions")
+def api_list_sessions(current_user: Optional[User] = Depends(get_optional_current_user)):
+    user_id = current_user.id if current_user else None
+    return {
+        "active_session_id": get_active_session_id(),
+        "sessions": list_all_sessions(user_id=user_id)
+    }
+
+@app.post("/api/sessions/switch")
+def api_switch_session(
+    payload: Dict[str, str],
+    current_user: Optional[User] = Depends(get_optional_current_user)
+):
+    session_id = payload.get("session_id", "demo")
+    user_id = current_user.id if current_user else None
+    success = set_active_session_id(session_id, user_id=user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found or access denied")
+    return {
+        "status": "success",
+        "active_session_id": get_active_session_id(),
+        "session": get_session(session_id, user_id=user_id)
+    }
+
+@app.post("/api/upload/map")
+def api_map_columns(
+    payload: Dict[str, Any],
+    current_user: Optional[User] = Depends(get_optional_current_user)
+):
+    session_id = payload.get("session_id")
+    mapping = payload.get("mapping", {})
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id is required")
+    try:
+        user_id = current_user.id if current_user else None
+        updated = apply_column_mapping(session_id, mapping, user_id=user_id)
+        return {"status": "success", "session": updated}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/upload/analyze")
+def api_analyze_session(
+    payload: Dict[str, Any],
+    current_user: Optional[User] = Depends(get_optional_current_user)
+):
+    session_id = payload.get("session_id")
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id is required")
+    try:
+        user_id = current_user.id if current_user else None
+        analyzed = preprocess_and_analyze_session(session_id, user_id=user_id)
+        return {"status": "success", "session": analyzed}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/sessions/{session_id}")
+def api_get_session_detail(
+    session_id: str,
+    current_user: Optional[User] = Depends(get_optional_current_user)
+):
+    user_id = current_user.id if current_user else None
+    sess = get_session(session_id, user_id=user_id)
+    if not sess:
+        raise HTTPException(status_code=404, detail="Session not found or access denied")
+    return sess
+
+
+# ============================================================================
+# CAREERTWIN CORE ANALYTICAL PLATFORM API ROUTES
+# ============================================================================
+
+@app.get("/api/overview")
+def api_overview(db: Session = Depends(get_db)):
+    active_id = get_active_session_id()
+    if active_id != "demo":
+        sess = get_session(active_id)
+        if sess and sess.get("analysis_results"):
+            ar = sess["analysis_results"]
+            return {
+                "title": f"Dynamic Intelligence: {sess.get('name', 'Uploaded Dataset')}",
+                "tagline": "Dynamic analysis session active. Benchmark preserved in background.",
+                "headline_metrics": {
+                    "total_job_postings_analyzed": ar.get("record_count", 0),
+                    "datascience_jobs_count": ar.get("record_count", 0) if ar.get("role") == "MARKET JOB DATA" else 0,
+                    "analytics_jobs_count": 0,
+                    "junior_outcome_profiles_jds": ar.get("record_count", 0) if ar.get("role") == "SKILL OUTCOME DATA" else 0,
+                    "senior_success_profiles_sds": ar.get("record_count", 0) if ar.get("role") == "TRAIT OUTCOME DATA" else 0,
+                    "unique_hiring_companies": ar.get("hiring_companies_count", 1),
+                    "avg_market_salary_lakhs": ar.get("salary_stats", {}).get("avg", 12.5),
+                    "validated_capability_domains": len(ar.get("top_skills", [])) if "top_skills" in ar else len(ar.get("outcome_statistics", [])),
+                    "pipeline_status": "OPERATIONAL (DYNAMIC SESSION)",
+                    "last_pipeline_execution": ar.get("computed_at")
+                },
+                "datasets": [
+                    {
+                        "id": sess["id"],
+                        "name": sess["name"],
+                        "file": sess.get("filename", "Uploaded File"),
+                        "records": ar.get("record_count", 0),
+                        "purpose": f"User Upload ({ar.get('role', 'Uploaded Data')})",
+                        "status": "Custom Ingestion (100% Processed)"
+                    }
+                ],
+                "active_session": sess
+            }
+    res = get_overview_summary(db)
+    res["active_session"] = get_session("demo")
+    return res
+
+@app.get("/api/data-quality")
+def api_data_quality(db: Session = Depends(get_db)):
+    return get_data_quality_report(db)
+
+# Market Intelligence
+@app.get("/api/market/overview")
+def api_market_overview(db: Session = Depends(get_db)):
+    active_id = get_active_session_id()
+    if active_id != "demo":
+        sess = get_session(active_id)
+        if sess and sess.get("analysis_results") and sess["analysis_results"].get("role") == "MARKET JOB DATA":
+            ar = sess["analysis_results"]
+            return {
+                "active_session": sess,
+                "summary": {
+                    "total_postings": ar.get("record_count", 0),
+                    "avg_salary_lakhs": ar.get("salary_stats", {}).get("avg", 12.5),
+                    "median_salary_lakhs": ar.get("salary_stats", {}).get("median", 11.8),
+                    "unique_companies": ar.get("hiring_companies_count", 1)
+                },
+                "skills": ar.get("top_skills", []),
+                "roles": ar.get("top_roles", [])
+            }
+    return get_market_overview(db)
+
+@app.get("/api/market/skills")
+def api_market_skills(db: Session = Depends(get_db)):
+    return get_market_skills(db)
+
+@app.get("/api/market/roles")
+def api_market_roles(db: Session = Depends(get_db)):
+    return get_market_roles(db)
+
+@app.get("/api/market/salary")
+def api_market_salary(db: Session = Depends(get_db)):
+    return get_market_salary(db)
+
+@app.get("/api/market/experience")
+def api_market_experience(db: Session = Depends(get_db)):
+    return get_market_experience(db)
+
+@app.get("/api/market/locations")
+def api_market_locations(db: Session = Depends(get_db)):
+    return get_market_locations(db)
+
+@app.get("/api/market/companies")
+def api_market_companies(db: Session = Depends(get_db)):
+    return get_market_companies(db)
+
+@app.get("/api/market/cooccurrence")
+def api_market_cooccurrence(db: Session = Depends(get_db)):
+    return get_market_cooccurrence(db)
+
+# Junior Outcomes (JDS)
+@app.get("/api/jds/overview")
+def api_jds_overview(db: Session = Depends(get_db)):
+    return get_jds_overview(db)
+
+@app.get("/api/jds/descriptive")
+def api_jds_descriptive(db: Session = Depends(get_db)):
+    return get_jds_descriptive(db)
+
+@app.get("/api/jds/statistics")
+def api_jds_statistics(db: Session = Depends(get_db)):
+    return get_jds_statistics(db)
+
+@app.get("/api/jds/logistic")
+def api_jds_logistic(db: Session = Depends(get_db)):
+    return get_jds_logistic(db)
+
+@app.get("/api/jds/random-forest")
+def api_jds_random_forest(db: Session = Depends(get_db)):
+    return get_jds_random_forest(db)
+
+@app.get("/api/jds/model-comparison")
+def api_jds_model_comparison(db: Session = Depends(get_db)):
+    return get_jds_model_comparison(db)
+
+# Senior Outcomes (SDS)
+@app.get("/api/sds/overview")
+def api_sds_overview(db: Session = Depends(get_db)):
+    return get_sds_overview(db)
+
+@app.get("/api/sds/descriptive")
+def api_sds_descriptive(db: Session = Depends(get_db)):
+    return get_sds_descriptive(db)
+
+@app.get("/api/sds/statistics")
+def api_sds_statistics(db: Session = Depends(get_db)):
+    return get_sds_statistics(db)
+
+@app.get("/api/sds/logistic")
+def api_sds_logistic(db: Session = Depends(get_db)):
+    return get_sds_logistic(db)
+
+@app.get("/api/sds/random-forest")
+def api_sds_random_forest(db: Session = Depends(get_db)):
+    return get_sds_random_forest(db)
+
+# Alignment Engine
+@app.get("/api/alignment")
+def api_alignment(db: Session = Depends(get_db)):
+    return get_alignment_matrix(db)
+
+# What-If Simulator (Mathematical JDS Validation Model)
+@app.get("/api/what-if")
+def api_what_if_get(db: Session = Depends(get_db)):
+    return calculate_what_if_scenario(db, {})
+
+@app.post("/api/what-if")
+def api_what_if(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    return calculate_what_if_scenario(db, payload)
+
+# Evidence Explorer
+@app.get("/api/evidence/{capability}")
+def api_evidence(capability: str, db: Session = Depends(get_db)):
+    return get_evidence_by_capability(db, capability)
+
+# Workforce Decisions
+@app.get("/api/workforce-decisions")
+def api_workforce_decisions(db: Session = Depends(get_db)):
+    return get_workforce_decisions(db)
+
+# Methodology
+@app.get("/api/methodology")
+def api_methodology():
+    return {
+        "title": "CareerTwin Data-Driven Methodology",
+        "pipeline_stages": [
+            {"step": "1. Data Acquisition", "detail": "Ingestion of 4 official hackathon datasets without row-level merging across distinct populations."},
+            {"step": "2. Data Quality & Cleaning", "detail": "Schema validation, missing value imputation, text normalization, and non-destructive salary band parsing."},
+            {"step": "3. Market Intelligence", "detail": "Frequency aggregation, role family classification, compensation cross-tabulation, and skill co-occurrence mining across 17,443 postings."},
+            {"step": "4. Junior Outcome Modeling (JDS)", "detail": "Hypothesis testing (t-test & Mann-Whitney U), Cohen's d effect sizes, Benjamini-Hochberg FDR correction, Logistic Regression with odds ratios, and 5-fold CV Random Forest."},
+            {"step": "5. Senior Success Analysis (SDS)", "detail": "Big Five personality trait observational evaluation with strict non-deterministic ethical guardrails."},
+            {"step": "6. Alignment Engine", "detail": "Cross-dimensional matrix synthesizing market demand and empirical outcome signals into Priority, Investigate, Opportunity, and Watch tiers."},
+            {"step": "7. Scenario What-If Simulation", "detail": "Model-based inference utilizing validated continuous logistic regression log-odds."},
+            {"step": "8. Workforce Decisions", "detail": "Stakeholder-specific translation of validated evidence for students, universities, enterprise L&D, and HR."}
+        ],
+        "ethical_disclaimers": [
+            "Association does not establish causation.",
+            "Scenario simulation represents model-based parameter sensitivity, not a guarantee of future wage increases.",
+            "Personality traits are observational and strictly barred from being standalone hiring criteria."
+        ]
+    }
+

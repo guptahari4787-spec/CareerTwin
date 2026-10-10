@@ -96,22 +96,22 @@ export const MasterProfileView: React.FC<MasterProfileViewProps> = ({
     <div className="space-y-6">
       
       {/* Header */}
-      <div className="bg-surface border border-border rounded-xl p-6 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-pigeon-800 border border-pigeon-600 rounded-xl p-6 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-accent text-xs font-semibold uppercase tracking-wider mb-1">
+          <div className="flex items-center gap-2 text-acid-500 text-xs font-bold uppercase tracking-wider mb-1">
             <User size={16} />
             <span>Master Profile Source of Truth</span>
           </div>
-          <h1 className="text-2xl font-bold text-charcoal">
+          <h1 className="text-2xl font-bold text-almond-200">
             Student Master Profile
           </h1>
-          <p className="text-xs text-muted mt-1 max-w-2xl leading-relaxed">
+          <p className="text-xs text-almond-400 mt-1 max-w-2xl leading-relaxed">
             All career-specific resumes and simulation deltas reference this single source of truth. Manage your authentic education, verified skills, and project history.
           </p>
         </div>
 
         {/* Profile Status Badge */}
-        <div className="px-3.5 py-1.5 rounded-lg bg-surface-subtle border border-border text-xs text-charcoal font-semibold shrink-0">
+        <div className="px-3.5 py-1.5 rounded-lg bg-pigeon-900 border border-pigeon-600 text-xs text-almond-200 font-semibold shrink-0">
           <span>Student ID: CU-2022-CSE</span>
         </div>
       </div>
@@ -119,64 +119,64 @@ export const MasterProfileView: React.FC<MasterProfileViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Left Column: Master Form (7 cols) */}
-        <div className="lg:col-span-7 bg-surface rounded-xl border border-border p-6 shadow-subtle">
-          <h3 className="text-sm font-bold text-charcoal mb-4">
+        <div className="lg:col-span-7 bg-pigeon-800 rounded-xl border border-pigeon-600 p-6 shadow-subtle">
+          <h3 className="text-sm font-bold text-almond-200 mb-4">
             Candidate Information
           </h3>
 
           <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
             <div>
-              <label className="block font-semibold text-charcoal mb-1">Full Name</label>
+              <label className="block font-semibold text-almond-200 mb-1">Full Name</label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-surface-subtle border border-border rounded-lg p-2.5 text-xs text-charcoal focus:outline-none focus:border-accent"
+                className="w-full bg-pigeon-900 border border-pigeon-600 rounded-lg p-2.5 text-xs text-almond-200 focus:outline-none focus:border-acid-500"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block font-semibold text-charcoal mb-1">University</label>
+                <label className="block font-semibold text-almond-200 mb-1">University</label>
                 <input
                   type="text"
                   value={university}
                   onChange={(e) => setUniversity(e.target.value)}
-                  className="w-full bg-surface-subtle border border-border rounded-lg p-2.5 text-xs text-charcoal focus:outline-none focus:border-accent"
+                  className="w-full bg-pigeon-900 border border-pigeon-600 rounded-lg p-2.5 text-xs text-almond-200 focus:outline-none focus:border-acid-500"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-charcoal mb-1">Degree & Major</label>
+                <label className="block font-semibold text-almond-200 mb-1">Degree & Major</label>
                 <input
                   type="text"
                   value={degree}
                   onChange={(e) => setDegree(e.target.value)}
-                  className="w-full bg-surface-subtle border border-border rounded-lg p-2.5 text-xs text-charcoal focus:outline-none focus:border-accent"
+                  className="w-full bg-pigeon-900 border border-pigeon-600 rounded-lg p-2.5 text-xs text-almond-200 focus:outline-none focus:border-acid-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-semibold text-charcoal mb-1">Professional Bio</label>
+              <label className="block font-semibold text-almond-200 mb-1">Professional Bio</label>
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 rows={3}
-                className="w-full bg-surface-subtle border border-border rounded-lg p-2.5 text-xs text-charcoal focus:outline-none focus:border-accent"
+                className="w-full bg-pigeon-900 border border-pigeon-600 rounded-lg p-2.5 text-xs text-almond-200 focus:outline-none focus:border-acid-500"
               />
             </div>
 
             <div className="flex items-center justify-between pt-2">
               {saveSuccess && (
-                <span className="text-emerald-700 font-semibold flex items-center gap-1">
+                <span className="text-acid-400 font-semibold flex items-center gap-1">
                   <CheckCircle size={14} weight="fill" /> Master Profile updated successfully.
                 </span>
               )}
               <button
                 type="submit"
                 disabled={isSaving}
-                className="ml-auto px-4 py-2 bg-charcoal hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+                className="ml-auto px-4 py-2 bg-acid-500 hover:bg-acid-400 text-pigeon-950 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50"
               >
                 <FloppyDisk size={14} />
                 <span>{isSaving ? "Saving..." : "Save Master Profile"}</span>
@@ -186,23 +186,23 @@ export const MasterProfileView: React.FC<MasterProfileViewProps> = ({
         </div>
 
         {/* Right Column: Resume Upload & Extraction Review (5 cols) */}
-        <div className="lg:col-span-5 bg-surface rounded-xl border border-border p-6 shadow-subtle space-y-4">
+        <div className="lg:col-span-5 bg-pigeon-800 rounded-xl border border-pigeon-600 p-6 shadow-subtle space-y-4">
           <div>
-            <h3 className="text-sm font-bold text-charcoal">
+            <h3 className="text-sm font-bold text-almond-200">
               Resume Ingestion & Extraction
             </h3>
-            <p className="text-xs text-muted mt-0.5">
+            <p className="text-xs text-almond-400 mt-0.5">
               Upload your existing PDF or Markdown resume. Extracted competencies will be queued for your manual review before being committed.
             </p>
           </div>
 
           {/* Upload Drop Area */}
-          <label className="border-2 border-dashed border-border hover:border-accent rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer bg-surface-subtle transition-colors text-center">
-            <UploadSimple size={24} className="text-slate-400 mb-2" />
-            <span className="text-xs font-semibold text-charcoal">
+          <label className="border-2 border-dashed border-pigeon-600 hover:border-acid-500 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer bg-pigeon-900 transition-colors text-center">
+            <UploadSimple size={24} className="text-almond-400 mb-2" />
+            <span className="text-xs font-semibold text-almond-200">
               {uploading ? "Parsing Document..." : "Click to upload resume (PDF / TXT)"}
             </span>
-            <span className="text-[10px] text-muted mt-1">
+            <span className="text-[10px] text-almond-600 mt-1">
               Supports ATS-formatted documents
             </span>
             <input 
@@ -214,7 +214,7 @@ export const MasterProfileView: React.FC<MasterProfileViewProps> = ({
           </label>
 
           {commitMessage && (
-            <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2">
+            <div className="p-3 rounded-lg bg-acid-950/60 border border-acid-600/40 text-xs text-acid-300 flex items-center gap-2">
               <CheckCircle size={15} weight="fill" />
               <span>{commitMessage}</span>
             </div>
@@ -222,17 +222,17 @@ export const MasterProfileView: React.FC<MasterProfileViewProps> = ({
 
           {/* EXTRACTION REVIEW MODAL / ACCORDION */}
           {extractionResult && (
-            <div className="p-4 rounded-xl bg-indigo-50/50 border border-indigo-200 space-y-3">
+            <div className="p-4 rounded-xl bg-pigeon-900 border border-pigeon-600 space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-charcoal">
+                <span className="font-bold text-almond-200">
                   Extraction Review: {extractionResult.filename}
                 </span>
-                <span className="text-[10px] text-accent font-semibold">
+                <span className="text-[10px] text-acid-400 font-semibold">
                   Review & Approve
                 </span>
               </div>
 
-              <p className="text-[11px] text-muted">
+              <p className="text-[11px] text-almond-400">
                 Uncheck any items that were incorrectly parsed:
               </p>
 
@@ -242,14 +242,14 @@ export const MasterProfileView: React.FC<MasterProfileViewProps> = ({
                   return (
                     <label 
                       key={s.skill_id}
-                      className="flex items-center justify-between p-2 rounded bg-white border border-border text-xs cursor-pointer"
+                      className="flex items-center justify-between p-2 rounded bg-pigeon-950 border border-pigeon-600 text-xs cursor-pointer"
                     >
-                      <span className="font-medium text-charcoal">{s.name}</span>
+                      <span className="font-medium text-almond-200">{s.name}</span>
                       <input
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => toggleApproveSkill(s.skill_id)}
-                        className="rounded text-accent"
+                        className="rounded text-acid-500"
                       />
                     </label>
                   );
@@ -258,7 +258,7 @@ export const MasterProfileView: React.FC<MasterProfileViewProps> = ({
 
               <button
                 onClick={handleCommitExtraction}
-                className="w-full py-2 bg-accent hover:bg-accent-hover text-white rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                className="w-full py-2 bg-acid-500 hover:bg-acid-400 text-pigeon-950 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
               >
                 <Check size={14} weight="bold" />
                 <span>Confirm & Commit ({approvedSkills.length}) to Master Profile</span>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { HaloReel } from './HaloReel';
 import { ResumeVariantItem, StudentProfile } from '../../types';
 import { api } from '../../services/api';
-import { Printer, CheckCircle, FloppyDisk, Sparkle } from '@phosphor-icons/react';
+import { Printer, CheckCircle, FloppyDisk } from '@phosphor-icons/react';
 
 interface ResumeStudioViewProps {
   resumes: ResumeVariantItem[];
@@ -51,16 +51,16 @@ export const ResumeStudioView: React.FC<ResumeStudioViewProps> = ({
     <div className="space-y-6">
       
       {/* Studio Header */}
-      <div className="bg-surface border border-border rounded-xl p-6 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-pigeon-800 border border-pigeon-600 rounded-xl p-6 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-accent text-xs font-semibold uppercase tracking-wider mb-1">
+          <div className="flex items-center gap-2 text-acid-500 text-xs font-bold uppercase tracking-wider mb-1">
             <span>CareerTwin Resume Studio</span>
-            <span className="text-muted">· One Master Truth → Multiple Role Variants</span>
+            <span className="text-almond-600">· One Master Truth → Multiple Role Variants</span>
           </div>
-          <h1 className="text-2xl font-bold text-charcoal">
+          <h1 className="text-2xl font-bold text-almond-200">
             Tailored Multiple-Resume Studio
           </h1>
-          <p className="text-xs text-muted mt-1 max-w-2xl leading-relaxed">
+          <p className="text-xs text-almond-400 mt-1 max-w-2xl leading-relaxed">
             All variants belong to {profile?.full_name || "Hariom Gupta"}. CareerTwin dynamically re-orders competencies, projects, and summaries to maximize ATS alignment without fabricating achievements.
           </p>
         </div>
@@ -68,7 +68,7 @@ export const ResumeStudioView: React.FC<ResumeStudioViewProps> = ({
         <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={handlePrint}
-            className="px-4 py-2 bg-surface hover:bg-slate-100 border border-border text-charcoal rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-subtle"
+            className="px-4 py-2 bg-pigeon-900 hover:bg-pigeon-700 border border-pigeon-600 text-almond-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-subtle"
           >
             <Printer size={15} />
             <span>Print / PDF Export</span>
@@ -82,8 +82,8 @@ export const ResumeStudioView: React.FC<ResumeStudioViewProps> = ({
         {/* Left Pane: Role Selector & Master Profile Grounding */}
         <div className="lg:col-span-4 space-y-4">
           
-          <div className="bg-surface rounded-xl border border-border p-5 shadow-subtle">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted mb-3">
+          <div className="bg-pigeon-800 rounded-xl border border-pigeon-600 p-5 shadow-subtle">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-almond-400 mb-3">
               Generated Career Variants
             </h3>
 
@@ -96,17 +96,17 @@ export const ResumeStudioView: React.FC<ResumeStudioViewProps> = ({
                     onClick={() => setActiveIndex(idx)}
                     className={`w-full text-left p-3 rounded-xl border transition-all flex items-center justify-between ${
                       isSelected
-                        ? 'bg-indigo-50/70 border-accent text-charcoal shadow-sm'
-                        : 'bg-surface-subtle border-border text-slate-700 hover:bg-slate-100'
+                        ? 'bg-pigeon-700 border-acid-500 text-almond-200 shadow-sm ring-1 ring-acid-500/30'
+                        : 'bg-pigeon-900 border-pigeon-600 text-almond-400 hover:bg-pigeon-700/60'
                     }`}
                   >
                     <div>
-                      <h4 className="text-xs font-bold text-charcoal">{r.role_title}</h4>
-                      <p className="text-[10px] text-muted mt-0.5">
+                      <h4 className="text-xs font-bold text-almond-200">{r.role_title}</h4>
+                      <p className="text-[10px] text-almond-600 mt-0.5 font-mono">
                         Targeting {r.role_target}
                       </p>
                     </div>
-                    <span className="font-mono text-xs font-extrabold text-accent bg-white px-2 py-0.5 rounded border border-border">
+                    <span className="font-mono text-xs font-extrabold text-acid-400 bg-pigeon-950 px-2 py-0.5 rounded border border-pigeon-600">
                       {r.match_percentage}%
                     </span>
                   </button>
@@ -117,31 +117,31 @@ export const ResumeStudioView: React.FC<ResumeStudioViewProps> = ({
 
           {/* Quick Summary Editor */}
           {activeResume && (
-            <div className="bg-surface rounded-xl border border-border p-5 shadow-subtle space-y-3">
+            <div className="bg-pigeon-800 rounded-xl border border-pigeon-600 p-5 shadow-subtle space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold text-charcoal">
+                <h4 className="text-xs font-bold text-almond-200">
                   Edit Role-Tailored Summary
                 </h4>
-                <span className="text-[10px] font-mono text-muted">{activeResume.role_target}</span>
+                <span className="text-[10px] font-mono text-almond-600">{activeResume.role_target}</span>
               </div>
 
               <textarea
                 value={editableSummary}
                 onChange={(e) => setEditableSummary(e.target.value)}
                 rows={4}
-                className="w-full bg-surface-subtle border border-border rounded-lg p-3 text-xs text-charcoal focus:outline-none focus:border-accent"
+                className="w-full bg-pigeon-900 border border-pigeon-600 rounded-lg p-3 text-xs text-almond-200 focus:outline-none focus:border-acid-500"
               />
 
               <div className="flex items-center justify-between pt-1">
                 {saveMessage && (
-                  <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
+                  <span className="text-[11px] text-acid-400 font-semibold flex items-center gap-1">
                     <CheckCircle size={14} weight="fill" /> {saveMessage}
                   </span>
                 )}
                 <button
                   onClick={handleSaveSummary}
                   disabled={isSaving}
-                  className="ml-auto px-3.5 py-1.5 bg-charcoal hover:bg-slate-800 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+                  className="ml-auto px-3.5 py-1.5 bg-acid-500 hover:bg-acid-400 text-pigeon-950 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50"
                 >
                   <FloppyDisk size={14} />
                   <span>{isSaving ? "Saving..." : "Save Summary"}</span>
@@ -151,17 +151,17 @@ export const ResumeStudioView: React.FC<ResumeStudioViewProps> = ({
           )}
 
           {/* Truth Verification Box */}
-          <div className="p-4 rounded-xl bg-surface-subtle border border-border text-xs text-muted">
-            <h5 className="font-bold text-charcoal mb-1">Master Profile Guarantee</h5>
+          <div className="p-4 rounded-xl bg-pigeon-900 border border-pigeon-600 text-xs text-almond-400">
+            <h5 className="font-bold text-almond-200 mb-1">Master Profile Guarantee</h5>
             <p className="text-[11px] leading-relaxed">
-              Every resume variant is constructed strictly from Hariom Gupta's verified master projects, coursework, and skills. No simulated data is exported without explicit confirmation.
+              Every resume variant is constructed strictly from verified master projects, coursework, and skills. No simulated data is exported without explicit confirmation.
             </p>
           </div>
 
         </div>
 
         {/* Right Canvas: Halo Reel */}
-        <div className="lg:col-span-8 bg-surface rounded-xl border border-border p-6 shadow-subtle">
+        <div className="lg:col-span-8 bg-pigeon-800 rounded-xl border border-pigeon-600 p-6 shadow-subtle">
           <HaloReel
             resumes={resumes}
             activeIndex={activeIndex}

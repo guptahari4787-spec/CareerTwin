@@ -22,6 +22,9 @@ env/
 *.sqlite
 *.sqlite3
 
+# Runtime user uploads
+backend/uploads/
+
 # Logs
 *.log
 

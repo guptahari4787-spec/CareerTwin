@@ -5,13 +5,57 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
+  
+  /* Primary Structural — Pigeon (60-70%) */
+  --color-pigeon-base: #5B6472;
+  --color-pigeon-bg: #151922;
+  --color-pigeon-sub: #1D222C;
+  --color-pigeon-surface: #252B36;
+  --color-pigeon-elevated: #303743;
+  --color-pigeon-border: #3A4250;
+
+  /* Backward Compatibility Mappings to Pigeon */
+  --color-soil-base: #151922;
+  --color-soil-sub: #1D222C;
+  --color-soil-surface: #252B36;
+  --color-soil-elevated: #303743;
+  --color-soil-card: #252B36;
+  --color-soil-border: #3A4250;
+
+  /* Content & Readability — Almond Blossom (20-25%) */
+  --color-almond-primary: #E8D8D0;
+  --color-almond-secondary: #C9B9B1;
+  --color-almond-muted: #9FA5AF;
+
+  /* Backward Compatibility Mappings to Almond Blossom */
+  --color-cream-body: #E8D8D0;
+  --color-cream-headings: #E8D8D0;
+  --color-cream-secondary: #C9B9B1;
+  --color-cream-muted: #9FA5AF;
+
+  /* Primary Accent Signal — Acid Lime (5-10%) */
+  --color-acid-lime: #C7F000;
+  --color-acid-hover: #D9F56A;
+  --color-acid-border: #849F00;
+  --color-acid-soft: rgba(199, 240, 0, 0.12);
+
+  /* Backward Compatibility Mappings to Acid Lime */
+  --color-basil-primary: #C7F000;
+  --color-basil-dark: #849F00;
+  --color-basil-bright: #D9F56A;
+  --color-basil-soft: rgba(199, 240, 0, 0.12);
+
+  /* Attention / Alerts — Coral Alert */
+  --color-tomato-primary: #E05A47;
+  --color-tomato-dark: #A83827;
+  --color-tomato-soft: rgba(224, 90, 71, 0.15);
 }
 
 body {
   margin: 0;
-  background-color: #FAFAF9;
-  color: #0F172A;
+  background-color: #151922;
+  color: #E8D8D0;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -21,20 +65,22 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: #151922;
+  color: #E8D8D0;
 }
 
-/* Custom subtle scrollbars */
+/* Custom Pigeon & Acid Lime Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #151922;
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #3A4250;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #C7F000;
 }

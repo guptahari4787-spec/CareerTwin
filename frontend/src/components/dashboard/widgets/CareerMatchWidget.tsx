@@ -18,15 +18,15 @@ export const CareerMatchWidget: React.FC<CareerMatchWidgetProps> = ({
   const missing = matchData?.missing_skills_count ?? 8;
 
   return (
-    <div className="h-full flex flex-col justify-between p-5 bg-surface rounded-xl border border-border">
+    <div className="h-full flex flex-col justify-between p-5 bg-pigeon-800 rounded-xl border border-pigeon-600">
       <div>
         <div className="flex items-center justify-between text-xs mb-2">
-          <span className="font-semibold text-muted uppercase tracking-wider text-[10px]">
+          <span className="font-bold text-almond-600 uppercase tracking-wider text-[10px]">
             Target Career Match
           </span>
           <button 
             onClick={onExploreCareers}
-            className="flex items-center gap-1 text-[11px] font-semibold text-accent hover:underline"
+            className="flex items-center gap-1 text-[11px] font-bold text-acid-400 hover:underline"
           >
             Switch Career <ArrowUpRight size={12} />
           </button>
@@ -34,38 +34,38 @@ export const CareerMatchWidget: React.FC<CareerMatchWidgetProps> = ({
 
         <div className="flex items-baseline justify-between mb-3">
           <div>
-            <h3 className="text-xl font-extrabold text-charcoal">{careerTitle}</h3>
-            <p className="text-xs text-muted mt-0.5">
+            <h3 className="text-xl font-extrabold text-almond-200">{careerTitle}</h3>
+            <p className="text-xs text-almond-400 mt-0.5">
               {matchData?.explanation || "Calculated using weighted industry rubric requirements."}
             </p>
           </div>
           <div className="text-right">
-            <span className="text-3xl font-extrabold text-accent font-mono">{matchPct}%</span>
-            <span className="block text-[10px] text-muted font-medium">Match Score</span>
+            <span className="text-3xl font-extrabold text-acid-400 font-mono">{matchPct}%</span>
+            <span className="block text-[10px] text-almond-600 font-medium">Match Score</span>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden flex mb-3">
+        <div className="w-full bg-pigeon-900 h-2 rounded-full overflow-hidden flex mb-3">
           <div 
-            className="bg-accent h-full rounded-full transition-all duration-500" 
+            className="bg-acid-500 h-full rounded-full transition-all duration-500" 
             style={{ width: `${Math.min(matchPct, 100)}%` }}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border text-center text-xs">
+      <div className="grid grid-cols-3 gap-2 pt-3 border-t border-pigeon-600 text-center text-xs">
         <div>
-          <span className="text-slate-400 text-[10px] uppercase block">Matched</span>
-          <span className="font-mono font-bold text-emerald-600">{matched} skills</span>
+          <span className="text-almond-600 text-[10px] uppercase font-bold block">Matched</span>
+          <span className="font-mono font-bold text-acid-400">{matched} skills</span>
         </div>
         <div>
-          <span className="text-slate-400 text-[10px] uppercase block">Skill Gaps</span>
-          <span className="font-mono font-bold text-amber-600">{missing} skills</span>
+          <span className="text-almond-600 text-[10px] uppercase font-bold block">Skill Gaps</span>
+          <span className="font-mono font-bold text-tomato-400">{missing} skills</span>
         </div>
         <div>
-          <span className="text-slate-400 text-[10px] uppercase block">Total Required</span>
-          <span className="font-mono font-bold text-charcoal">{total} skills</span>
+          <span className="text-almond-600 text-[10px] uppercase font-bold block">Total Required</span>
+          <span className="font-mono font-bold text-almond-200">{total} skills</span>
         </div>
       </div>
     </div>

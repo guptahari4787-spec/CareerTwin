@@ -144,9 +144,39 @@ class Resume(Base):
     user = relationship("User", back_populates="resumes")
 
 
+class UserSession(Base):
+    __tablename__ = "user_sessions"
+    token = Column(String(128), primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False)
+
+    user = relationship("User")
+
+
 # ============================================================================
 # Pydantic Schemas
 # ============================================================================
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    role: str
+
+class AuthResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
 
 class UserSkillSchema(BaseModel):
     skill_id: str
@@ -270,3 +300,229 @@ class UniversityInsightsResponse(BaseModel):
     common_skill_gaps: List[Dict[str, Any]]
     industry_demand_alignment: List[Dict[str, Any]]
     recommended_university_programs: List[Dict[str, Any]]
+
+
+# ============================================================================
+# CareerTwin Evidence-Driven Architecture: 16 Core Models
+# ============================================================================
+
+class MarketDataScienceJob(Base):
+    __tablename__ = "market_datascience_jobs"
+    id = Column(Integer, primary_key=True, index=True)
+    reference_no = Column(Integer, index=True)
+    company_name = Column(String(255), index=True)
+    job_title = Column(String(255), index=True)
+    min_experience = Column(Integer)
+    avg_salary = Column(String(50))
+    min_salary = Column(String(50))
+    max_salary = Column(String(50))
+    num_of_jobs = Column(Integer)
+    avg_salary_numeric = Column(Float)
+    min_salary_numeric = Column(Float)
+    max_salary_numeric = Column(Float)
+
+class MarketAnalyticsJob(Base):
+    __tablename__ = "market_analytics_jobs"
+    id = Column(Integer, primary_key=True, index=True)
+    s_no = Column(Integer, index=True)
+    experience = Column(String(100))
+    min_exp_years = Column(Float)
+    max_exp_years = Column(Float)
+    job_description = Column(Text)
+    job_desig = Column(String(255), index=True)
+    normalized_role = Column(String(100), index=True)
+    job_type = Column(String(100))
+    key_skills = Column(Text)
+    location = Column(String(255))
+    primary_city = Column(String(100), index=True)
+    salary_raw = Column(String(100))
+    salary_band = Column(String(50), index=True)
+    salary_midpoint_lakhs = Column(Float)
+
+class JDSSkillTrait(Base):
+    __tablename__ = "jds_skill_traits"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    candidate_id = Column(Integer, index=True)
+    big_data_skills = Column(Float)
+    maths_stats_skills = Column(Float)
+    coding_skills = Column(Float)
+    ai_and_ml_skills = Column(Float)
+    dashboard_and_storytelling_skills = Column(Float)
+    salary_hike_high_or_low = Column(Integer, index=True)
+
+class SDSPersonalityTrait(Base):
+    __tablename__ = "sds_personality_traits"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    candidate_id = Column(Integer, index=True)
+    neuroticism = Column(Float)
+    extraversion = Column(Float)
+    openness_to_experience = Column(Float)
+    agreeableness = Column(Float)
+    conscientiousness = Column(Float)
+    success_classification_high_low = Column(Integer, index=True)
+
+class MarketSkillMetric(Base):
+    __tablename__ = "market_skill_metrics"
+    id = Column(Integer, primary_key=True, index=True)
+    skill_name = Column(String(100), unique=True, index=True)
+    category = Column(String(100))
+    job_count = Column(Integer)
+    prevalence_pct = Column(Float)
+    avg_salary_lakhs = Column(Float)
+    demand_tier = Column(String(50))
+
+class MarketRoleMetric(Base):
+    __tablename__ = "market_role_metrics"
+    id = Column(Integer, primary_key=True, index=True)
+    role_name = Column(String(100), unique=True, index=True)
+    job_count = Column(Integer)
+    avg_salary_lakhs = Column(Float)
+    min_salary_lakhs = Column(Float)
+    max_salary_lakhs = Column(Float)
+    top_skills_json = Column(Text)
+
+class MarketSalaryMetric(Base):
+    __tablename__ = "market_salary_metrics"
+    id = Column(Integer, primary_key=True, index=True)
+    experience_band = Column(String(50), index=True)
+    salary_band = Column(String(50))
+    count = Column(Integer)
+    avg_salary_lakhs = Column(Float)
+    median_salary_lakhs = Column(Float)
+
+class MarketLocationMetric(Base):
+    __tablename__ = "market_location_metrics"
+    id = Column(Integer, primary_key=True, index=True)
+    city = Column(String(100), unique=True, index=True)
+    job_count = Column(Integer)
+    share_pct = Column(Float)
+    avg_salary_lakhs = Column(Float)
+
+class JDSStatisticalResult(Base):
+    __tablename__ = "jds_statistical_results"
+    id = Column(Integer, primary_key=True, index=True)
+    skill_name = Column(String(100), unique=True, index=True)
+    display_name = Column(String(100))
+    mean_high = Column(Float)
+    std_high = Column(Float)
+    mean_low = Column(Float)
+    std_low = Column(Float)
+    difference = Column(Float)
+    t_statistic = Column(Float)
+    p_value = Column(Float)
+    p_value_fdr = Column(Float)
+    mann_whitney_u = Column(Float)
+    mann_whitney_p = Column(Float)
+    cohens_d = Column(Float)
+    significant = Column(Boolean)
+
+class JDSModelResult(Base):
+    __tablename__ = "jds_model_results"
+    id = Column(Integer, primary_key=True, index=True)
+    model_name = Column(String(100), index=True)
+    metric_name = Column(String(100), index=True)
+    metric_value = Column(Float)
+    details_json = Column(Text)
+
+class SDSStatisticalResult(Base):
+    __tablename__ = "sds_statistical_results"
+    id = Column(Integer, primary_key=True, index=True)
+    trait_name = Column(String(100), unique=True, index=True)
+    display_name = Column(String(100))
+    mean_high = Column(Float)
+    std_high = Column(Float)
+    mean_low = Column(Float)
+    std_low = Column(Float)
+    difference = Column(Float)
+    t_statistic = Column(Float)
+    p_value = Column(Float)
+    p_value_fdr = Column(Float)
+    cohens_d = Column(Float)
+    significant = Column(Boolean)
+
+class SDSModelResult(Base):
+    __tablename__ = "sds_model_results"
+    id = Column(Integer, primary_key=True, index=True)
+    model_name = Column(String(100), index=True)
+    metric_name = Column(String(100), index=True)
+    metric_value = Column(Float)
+    details_json = Column(Text)
+
+class AlignmentResult(Base):
+    __tablename__ = "alignment_results"
+    id = Column(Integer, primary_key=True, index=True)
+    capability = Column(String(100), unique=True, index=True)
+    display_name = Column(String(100))
+    market_demand_level = Column(String(50))
+    market_prevalence_pct = Column(Float)
+    outcome_signal_level = Column(String(50))
+    cohens_d = Column(Float)
+    statistical_p_value = Column(Float)
+    ml_importance = Column(Float)
+    classification = Column(String(50), index=True)
+    interpretation = Column(Text)
+    decision_recommendation = Column(Text)
+
+class WhatIfResult(Base):
+    __tablename__ = "what_if_results"
+    id = Column(Integer, primary_key=True, index=True)
+    scenario_name = Column(String(255))
+    inputs_json = Column(Text)
+    baseline_prob = Column(Float)
+    scenario_prob = Column(Float)
+    delta_prob = Column(Float)
+    model_used = Column(String(100))
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class DataQualityResult(Base):
+    __tablename__ = "data_quality_results"
+    id = Column(Integer, primary_key=True, index=True)
+    dataset_name = Column(String(100), unique=True, index=True)
+    file_name = Column(String(255))
+    total_records_raw = Column(Integer)
+    total_records_clean = Column(Integer)
+    missing_values_count = Column(Integer)
+    duplicate_records_count = Column(Integer)
+    invalid_records_count = Column(Integer)
+    valid_observations_count = Column(Integer)
+    quality_status = Column(String(50))
+    cleaning_log_json = Column(Text)
+    column_summary_json = Column(Text)
+
+class AnalysisRun(Base):
+    __tablename__ = "analysis_runs"
+    id = Column(Integer, primary_key=True, index=True)
+    run_timestamp = Column(DateTime, default=datetime.utcnow)
+    status = Column(String(50))
+    summary_json = Column(Text)
+
+
+# ============================================================================
+# CareerTwin Analytical Request / Response Pydantic Models
+# ============================================================================
+
+class DataQualityItem(BaseModel):
+    dataset_name: str
+    file_name: str
+    total_records_raw: int
+    total_records_clean: int
+    missing_values_count: int
+    duplicate_records_count: int
+    invalid_records_count: int
+    valid_observations_count: int
+    quality_status: str
+    cleaning_actions: List[str]
+    column_summaries: List[Dict[str, Any]]
+
+class CareerTwinWhatIfScenarioRequest(BaseModel):
+    coding_skills: Optional[float] = 3.0
+    maths_stats_skills: Optional[float] = 3.0
+    ai_and_ml_skills: Optional[float] = 3.0
+    dashboard_and_storytelling_skills: Optional[float] = 3.0
+    big_data_skills: Optional[float] = 3.0
+    baseline_coding: Optional[float] = 3.0
+    baseline_maths_stats: Optional[float] = 3.0
+    baseline_ai_and_ml: Optional[float] = 3.0
+    baseline_dashboard_and_storytelling: Optional[float] = 3.0
+    baseline_big_data: Optional[float] = 3.0
+

@@ -170,3 +170,16 @@ export interface UniversityInsightsResponse {
   }>;
   ecosystem_loop: Record<string, string>;
 }
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}

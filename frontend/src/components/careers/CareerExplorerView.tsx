@@ -1,55 +1,57 @@
-import React, { useState } from 'react';
-import { Compass, CheckCircle, WarningCircle, ArrowRight, Check } from '@phosphor-icons/react';
-import { CareerListItem, CareerMatchResponse } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { Compass, CheckCircle, WarningCircle, Check } from '@phosphor-icons/react';
+import { CareerListItem } from '../../types';
 import { api } from '../../services/api';
 
 interface CareerExplorerViewProps {
   careers: CareerListItem[];
-  currentTargetId: string;
+  currentTargetId?: string;
   onSetTargetCareer: (careerId: string) => void;
   onSimulate: (query: string) => void;
 }
 
 export const CareerExplorerView: React.FC<CareerExplorerViewProps> = ({
   careers,
-  currentTargetId,
+  currentTargetId = "cloud-engineer",
   onSetTargetCareer,
   onSimulate
 }) => {
   const [selectedCareerId, setSelectedCareerId] = useState<string>(currentTargetId);
   const [careerDetail, setCareerDetail] = useState<any | null>(null);
-  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [loadingDetail, setLoadingDetail] = useState<boolean>(false);
 
-  const fetchDetail = async (id: string) => {
-    setSelectedCareerId(id);
+  useEffect(() => {
+    if (selectedCareerId) {
+      fetchDetail(selectedCareerId);
+    }
+  }, [selectedCareerId]);
+
+  const fetchDetail = async (cid: string) => {
+    setSelectedCareerId(cid);
     setLoadingDetail(true);
     try {
-      const data = await api.getCareerDetail(id);
-      setCareerDetail(data);
+      const detail = await api.getCareerDetail(cid);
+      setCareerDetail(detail);
     } catch (err) {
-      console.error(err);
+      console.error("Failed to fetch career detail:", err);
     } finally {
       setLoadingDetail(false);
     }
   };
 
-  React.useEffect(() => {
-    fetchDetail(selectedCareerId);
-  }, []);
-
   return (
     <div className="space-y-6">
       
       {/* Header */}
-      <div className="bg-surface border border-border rounded-xl p-6 shadow-subtle">
-        <div className="flex items-center gap-2 text-accent text-xs font-semibold uppercase tracking-wider mb-1">
+      <div className="bg-pigeon-800 border border-pigeon-600 rounded-xl p-6 shadow-subtle">
+        <div className="flex items-center gap-2 text-acid-500 text-xs font-bold uppercase tracking-wider mb-1">
           <Compass size={16} />
           <span>Industry Career Alignment</span>
         </div>
-        <h1 className="text-2xl font-bold text-charcoal">
+        <h1 className="text-2xl font-bold text-almond-200">
           Career Path Explorer
         </h1>
-        <p className="text-xs text-muted mt-1 max-w-2xl leading-relaxed">
+        <p className="text-xs text-almond-400 mt-1 max-w-2xl leading-relaxed">
           Evaluate 10 major technical career trajectories. Compatibility scores are transparently calculated by weighting your verified skills against industry hiring requirements.
         </p>
       </div>
@@ -59,7 +61,7 @@ export const CareerExplorerView: React.FC<CareerExplorerViewProps> = ({
         
         {/* Left Column: 10 Careers List */}
         <div className="lg:col-span-5 space-y-2.5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted px-1 mb-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-almond-400 px-1 mb-2">
             Available Career Paths ({careers.length})
           </h3>
 
@@ -74,34 +76,34 @@ export const CareerExplorerView: React.FC<CareerExplorerViewProps> = ({
                   onClick={() => fetchDetail(career.id)}
                   className={`p-4 rounded-xl border transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-indigo-50/70 border-accent shadow-sm'
-                      : 'bg-surface border-border hover:bg-surface-subtle'
+                      ? 'bg-pigeon-700 border-acid-500 shadow-sm ring-1 ring-acid-500/30'
+                      : 'bg-pigeon-800 border-pigeon-600 hover:bg-pigeon-700/70'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-charcoal">{career.title}</h4>
+                        <h4 className="text-sm font-bold text-almond-200">{career.title}</h4>
                         {isCurrentTarget && (
-                          <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-accent text-white uppercase">
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-acid-500 text-pigeon-950 uppercase">
                             Target
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-muted">{career.category}</span>
+                      <span className="text-[10px] text-almond-600 font-mono">{career.category}</span>
                     </div>
-                    <span className="font-mono text-sm font-extrabold text-accent bg-white px-2 py-0.5 rounded border border-border">
+                    <span className="font-mono text-sm font-extrabold text-acid-400 bg-pigeon-900 px-2 py-0.5 rounded border border-pigeon-600">
                       {career.match_percentage}%
                     </span>
                   </div>
 
-                  <p className="text-[11px] text-muted line-clamp-2 mb-2 leading-relaxed">
+                  <p className="text-[11px] text-almond-400 line-clamp-2 mb-2 leading-relaxed">
                     {career.overview}
                   </p>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-border/60">
-                    <span>Matched: <strong className="text-emerald-700 font-mono">{career.matched_skills}</strong> / {career.total_skills}</span>
-                    <span className="font-semibold text-charcoal">{career.average_salary} avg</span>
+                  <div className="flex items-center justify-between text-[11px] text-almond-400 pt-2 border-t border-pigeon-600">
+                    <span>Matched: <strong className="text-acid-400 font-mono">{career.matched_skills}</strong> / {career.total_skills}</span>
+                    <span className="font-semibold text-almond-200">{career.average_salary} avg</span>
                   </div>
                 </div>
               );
@@ -110,9 +112,9 @@ export const CareerExplorerView: React.FC<CareerExplorerViewProps> = ({
         </div>
 
         {/* Right Column: In-depth Requirements & Skill Gap Breakdown */}
-        <div className="lg:col-span-7 bg-surface rounded-xl border border-border p-6 shadow-subtle min-h-[600px]">
+        <div className="lg:col-span-7 bg-pigeon-800 rounded-xl border border-pigeon-600 p-6 shadow-subtle min-h-[600px]">
           {loadingDetail && (
-            <div className="py-20 text-center text-xs text-muted">
+            <div className="py-20 text-center text-xs text-almond-400">
               Loading career requirements...
             </div>
           )}
@@ -121,44 +123,44 @@ export const CareerExplorerView: React.FC<CareerExplorerViewProps> = ({
             <div className="space-y-6">
               
               {/* Detail Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-pigeon-600 gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-bold text-charcoal">{careerDetail.career.title}</h2>
-                    <span className="px-2 py-0.5 rounded bg-surface-subtle border border-border text-[10px] font-semibold text-muted">
+                    <h2 className="text-xl font-bold text-almond-200">{careerDetail.career.title}</h2>
+                    <span className="px-2 py-0.5 rounded bg-pigeon-900 border border-pigeon-600 text-[10px] font-semibold text-almond-400">
                       {careerDetail.career.category}
                     </span>
                   </div>
-                  <p className="text-xs text-muted mt-1">
-                    Market Demand: <span className="font-semibold text-charcoal">{careerDetail.career.market_demand}</span> · Avg Compensation: <span className="font-mono font-semibold text-charcoal">{careerDetail.career.average_salary}</span>
+                  <p className="text-xs text-almond-400 mt-1">
+                    Market Demand: <span className="font-semibold text-almond-200">{careerDetail.career.market_demand}</span> · Avg Compensation: <span className="font-mono font-semibold text-almond-200">{careerDetail.career.average_salary}</span>
                   </p>
                 </div>
 
                 {careerDetail.career.id !== currentTargetId ? (
                   <button
                     onClick={() => onSetTargetCareer(careerDetail.career.id)}
-                    className="px-4 py-2 bg-accent hover:bg-accent-hover text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-sm shrink-0"
+                    className="px-4 py-2 bg-acid-500 hover:bg-acid-400 text-pigeon-950 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 shadow-sm shrink-0"
                   >
                     <Check size={14} weight="bold" />
                     <span>Set as Target Career</span>
                   </button>
                 ) : (
-                  <span className="text-xs font-semibold text-emerald-700 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center gap-1 shrink-0">
+                  <span className="text-xs font-semibold text-acid-400 px-3 py-1.5 rounded-lg bg-acid-950/60 border border-acid-600/40 flex items-center gap-1 shrink-0">
                     <CheckCircle size={14} weight="fill" /> Active Target
                   </span>
                 )}
               </div>
 
               {/* Match Summary */}
-              <div className="p-4 rounded-xl bg-surface-subtle border border-border flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-pigeon-900 border border-pigeon-600 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-muted block mb-0.5">Calculated Compatibility</span>
-                  <p className="text-xs text-charcoal font-medium">
+                  <span className="text-[10px] font-bold uppercase text-almond-600 block mb-0.5">Calculated Compatibility</span>
+                  <p className="text-xs text-almond-200 font-medium">
                     {careerDetail.match.explanation}
                   </p>
                 </div>
-                <div className="text-right shrink-0 pl-4 border-l border-border">
-                  <span className="text-2xl font-extrabold text-accent font-mono">
+                <div className="text-right shrink-0 pl-4 border-l border-pigeon-600">
+                  <span className="text-2xl font-extrabold text-acid-400 font-mono">
                     {careerDetail.match.match_percentage}%
                   </span>
                 </div>
@@ -166,7 +168,7 @@ export const CareerExplorerView: React.FC<CareerExplorerViewProps> = ({
 
               {/* Skill Gaps Breakdown Table */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-charcoal mb-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-almond-200 mb-3">
                   Skill Competency Checklist
                 </h4>
 
@@ -174,25 +176,25 @@ export const CareerExplorerView: React.FC<CareerExplorerViewProps> = ({
                   {careerDetail.match.skill_gaps.map((gap: any) => (
                     <div 
                       key={gap.skill_id}
-                      className="p-3 rounded-lg border border-border bg-white flex items-center justify-between text-xs"
+                      className="p-3 rounded-lg border border-pigeon-600 bg-pigeon-900 flex items-center justify-between text-xs"
                     >
                       <div className="flex items-center gap-2.5">
                         {gap.status === 'Strong' ? (
-                          <div className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-acid-950 text-acid-400 flex items-center justify-center">
                             <CheckCircle size={14} weight="fill" />
                           </div>
                         ) : gap.status === 'Developing' ? (
-                          <div className="w-5 h-5 rounded-full bg-indigo-50 text-accent flex items-center justify-center">
-                            <span className="w-2 h-2 rounded-full bg-accent"></span>
+                          <div className="w-5 h-5 rounded-full bg-pigeon-800 text-almond-200 flex items-center justify-center">
+                            <span className="w-2 h-2 rounded-full bg-almond-200"></span>
                           </div>
                         ) : (
-                          <div className="w-5 h-5 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+                          <div className="w-5 h-5 rounded-full bg-tomato-950 text-tomato-400 flex items-center justify-center">
                             <WarningCircle size={14} weight="fill" />
                           </div>
                         )}
                         <div>
-                          <span className="font-bold text-charcoal">{gap.skill_name}</span>
-                          <span className="text-[10px] text-muted block">
+                          <span className="font-bold text-almond-200">{gap.skill_name}</span>
+                          <span className="text-[10px] text-almond-600 block">
                             Expected: {gap.expected_level} · Importance: {gap.importance}
                           </span>
                         </div>
@@ -201,10 +203,10 @@ export const CareerExplorerView: React.FC<CareerExplorerViewProps> = ({
                       <div className="flex items-center gap-2">
                         <span className={`text-[10px] px-2 py-0.5 rounded font-semibold ${
                           gap.status === 'Strong'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            ? 'bg-acid-950/60 text-acid-400 border border-acid-600/40'
                             : gap.status === 'Developing'
-                            ? 'bg-indigo-50 text-accent border border-indigo-200'
-                            : 'bg-amber-50 text-amber-800 border border-amber-200'
+                            ? 'bg-pigeon-800 text-almond-200 border border-pigeon-600'
+                            : 'bg-tomato-950/60 text-tomato-300 border border-tomato-500/40'
                         }`}>
                           {gap.status}
                         </span>
@@ -212,7 +214,7 @@ export const CareerExplorerView: React.FC<CareerExplorerViewProps> = ({
                         {gap.status === 'Missing' && (
                           <button
                             onClick={() => onSimulate(`What if I learn ${gap.skill_name}?`)}
-                            className="text-[10px] px-2 py-0.5 rounded bg-surface-subtle hover:bg-slate-200 text-charcoal font-semibold border border-border"
+                            className="text-[10px] px-2 py-0.5 rounded bg-pigeon-800 hover:bg-pigeon-700 text-almond-200 font-semibold border border-pigeon-600 transition-colors"
                           >
                             Simulate
                           </button>

@@ -127,33 +127,33 @@ export const StudentDashboardView: React.FC<StudentDashboardViewProps> = ({
     <div className="space-y-6">
       
       {/* Welcome Banner */}
-      <div className="bg-surface border border-border rounded-xl p-6 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-pigeon-800 border border-pigeon-600 rounded-xl p-6 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-charcoal">
+          <h1 className="text-2xl font-bold text-almond-200">
             Welcome back, {profile?.full_name?.split(' ')[0] || "Hariom"}!
           </h1>
-          <p className="text-xs text-muted mt-1 max-w-2xl leading-relaxed">
+          <p className="text-xs text-almond-400 mt-1 max-w-2xl leading-relaxed">
             Explore career opportunities, analyze your skill gaps, plan your learning path and create tailored resumes.
           </p>
         </div>
 
-        {/* Overview Inline Metrics (Clean & Restrained) */}
-        <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-border pt-3 md:pt-0 md:pl-6 shrink-0">
+        {/* Overview Inline Metrics */}
+        <div className="flex items-center gap-6 border-t md:border-t-0 md:border-l border-pigeon-600 pt-3 md:pt-0 md:pl-6 shrink-0">
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Skills</span>
-            <span className="font-mono text-lg font-extrabold text-charcoal">{verifiedSkillCount}</span>
+            <span className="text-[10px] uppercase font-bold text-almond-600 block">Total Skills</span>
+            <span className="font-mono text-lg font-extrabold text-almond-200">{verifiedSkillCount}</span>
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Career Match</span>
-            <span className="font-mono text-lg font-extrabold text-accent">{matchPct}%</span>
+            <span className="text-[10px] uppercase font-bold text-almond-600 block">Career Match</span>
+            <span className="font-mono text-lg font-extrabold text-acid-400">{matchPct}%</span>
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Skill Gaps</span>
-            <span className="font-mono text-lg font-extrabold text-amber-600">{missingCount}</span>
+            <span className="text-[10px] uppercase font-bold text-almond-600 block">Skill Gaps</span>
+            <span className="font-mono text-lg font-extrabold text-tomato-400">{missingCount}</span>
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Readiness</span>
-            <span className="font-mono text-lg font-extrabold text-emerald-600">76%</span>
+            <span className="text-[10px] uppercase font-bold text-almond-600 block">Readiness</span>
+            <span className="font-mono text-lg font-extrabold text-acid-400">76%</span>
           </div>
         </div>
       </div>

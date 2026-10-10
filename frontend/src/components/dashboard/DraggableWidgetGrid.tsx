@@ -118,7 +118,7 @@ export const DraggableWidgetGrid: React.FC<DraggableWidgetGridProps> = ({
         </span>
         <button
           onClick={resetToDefaultLayout}
-          className="flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-charcoal hover:underline"
+          className="flex items-center gap-1 text-[11px] font-medium text-almond-400 hover:text-almond-200 hover:underline"
         >
           <ArrowCounterClockwise size={12} />
           <span>Reset Layout</span>
@@ -153,7 +153,7 @@ export const DraggableWidgetGrid: React.FC<DraggableWidgetGridProps> = ({
                   onDragStart={() => handleDragStart(widget.id)}
                   onDragEnd={handleDragEnd}
                   title="Drag to rearrange widget"
-                  className="absolute top-2 right-2 z-10 w-6 h-6 rounded bg-surface/80 hover:bg-slate-200 text-slate-400 hover:text-charcoal cursor-grab active:cursor-grabbing flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 z-10 w-6 h-6 rounded bg-pigeon-800/80 hover:bg-pigeon-700 text-almond-400 hover:text-almond-200 cursor-grab active:cursor-grabbing flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <DotsSixVertical size={14} />
                 </div>
